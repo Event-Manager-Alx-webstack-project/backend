@@ -1,16 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const AuthController = require('../controllers/AuthController');
 
-/* GET users listing. */
-router.get('/login', function(req, res, next) {
-    // res.send('respond with a resource');
-    res.status(200).json({ res: 'login route to implement' });
-});
+/* authenticate user */
+router.get('/login',AuthController.login);
 
-/* GET user info. */
-router.get('/logout', function(req, res, next) {
-    // res.send('logout route to implement');
-    res.status(200).json({ res: 'logout route to implement' });
-});
+/* disconnect user. */
+router.get('/logout', AuthController.logout);
 
 module.exports = router;
