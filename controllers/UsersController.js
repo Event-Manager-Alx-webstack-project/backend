@@ -1,4 +1,4 @@
-const User = require('../models/User')
+const User = require('../models/user')
 const { sequelize } = require('../config/db')
 const sha1 = require('sha1');
 const redisClient = require('../utils/redis')
@@ -63,7 +63,8 @@ class UsersController {
             });
             response.status(201).json({ res: "User created Successfully" });
         } catch (e) {
-            response.status(500).json({ error: 'Something went wrong' });
+            response.status(500).json({ error:`Something went wrong, ${e}` });
+            console.error(e)
             return;
         }
         // sequelize.sync().then(() => {

@@ -1,24 +1,49 @@
-const { Event, Category, UserLike } = require('../models')
+const { Sequelize, Op } = require('sequelize')
+const { Event, Category, UserLike, EventCategory } = require('../models')
 
 const createEvent = async (req, res) => {
     try {
-        const { organizer_id, title, description, location, categories } = req.body
+        const { organizer_id, name, description, location, categories } = req.body
         const event = await Event.create({
             organizer_id,
-            title,
+            name,
             description,
             location
         })
+        
 
         if (categories && categories.length > 0) {
-            const categoryInstances = await Category.findAll({
-                where: {
-                    category_id: categories
-                }
+            // const categoryInstances = await Category.findAll({
+            //     where: {
+            //         // category_id: categories
+            //         name: {
+            //             [Sequelize.Op.in]: categories
+            //         }
+            //     }
+            // })
+            for (const categoryName of categories) {
+                const category = await Category.findOrCreate({
+                    where: {
+                        name: categoryName
+                    }
+                })
+                await EventCategory.create({
+                    event_id: event.id,
+                    category_id: category[0].id
+                })
+            }
+            const createdEvent = await Event.findOne({
+                where: { id: event.id },
+                include: [
+                    {
+                        model: Category,
+                        through: { attributes: [] }
+                    }
+                ]
             })
-            await event.addCategories(categoryInstances)
+            // await event.addCategories(categoryInstances)
+            res.status(201).json(createdEvent)
         }
-        res.status(201).json(event)
     } catch (error) {
         res.status(201).json({ error: error.message })
     }
@@ -50,11 +75,13 @@ const getEventId = async (req, res) => {
 
 const getEventsByCategory = async (req, res) => {
     try {
-        const { category_id } = req.params
+        const { categories } = req.body
         const events = await Event.findAll({
             include: {
                 model: Category,
-                where: { category_id }
+                where: { 
+                    name: {[Op.in]: categories} 
+                }
             }
         })
         res.status(200).json(events)
