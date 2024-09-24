@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 const uuidv4 = uuid.v4;
 const sha1 = require('sha1');
-const User = require('../models/User')
+const User = require('../models/user')
 const redisClient = require('../utils/redis')
 
 
