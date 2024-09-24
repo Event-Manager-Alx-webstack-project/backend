@@ -1,5 +1,5 @@
-const { Sequelize, Op } = require('sequelize')
-const { Event, Category, UserLike, EventCategory } = require('../models')
+const { Op, Sequelize, where } = require('sequelize')
+const { Event, Category, UserLike, EventCategory, User } = require('../models')
 
 const createEvent = async (req, res) => {
     try {
@@ -13,14 +13,6 @@ const createEvent = async (req, res) => {
         
 
         if (categories && categories.length > 0) {
-            // const categoryInstances = await Category.findAll({
-            //     where: {
-            //         // category_id: categories
-            //         name: {
-            //             [Sequelize.Op.in]: categories
-            //         }
-            //     }
-            // })
             for (const categoryName of categories) {
                 const category = await Category.findOrCreate({
                     where: {
@@ -41,7 +33,6 @@ const createEvent = async (req, res) => {
                     }
                 ]
             })
-            // await event.addCategories(categoryInstances)
             res.status(201).json(createdEvent)
         }
     } catch (error) {
@@ -49,14 +40,6 @@ const createEvent = async (req, res) => {
     }
 }
 
-const getAllEvents = async (req, res) => {
-    try {
-        const events = await Event.findAll()
-        res.status(200).json(events)
-    } catch (error) {
-        res.status(500).json({ error: error.message })
-    }
-}
 
 const getEventId = async (req, res) => {
     try {
@@ -73,32 +56,47 @@ const getEventId = async (req, res) => {
     }
 }
 
-const getEventsByCategory = async (req, res) => {
+const getEvents = async (req, res) => {
     try {
-        const { categories } = req.body
-        const events = await Event.findAll({
-            include: {
-                model: Category,
-                where: { 
-                    name: {[Op.in]: categories} 
-                }
+        let { categories, user } = req.query
+        if (categories) {
+            // get event by category
+            if (!Array.isArray(categories)) {
+                categories = [categories]
             }
-        })
-        res.status(200).json(events)
+    
+            const events = await Event.findAll({
+                include: [
+                    {
+                        model: Category,
+                        where: {
+                            name: {
+                                [Op.in]: categories
+                            }
+                        },
+                        through: { attributes: [] }
+                    }
+                ]
+            })
+
+            res.status(200).json(events)
+        } else if (user) {
+            // get event by user
+            const events = await Event.findAll({ where: { organizer_id: user } })
+            
+            res.status(200).json(events)
+        }
+         else {
+            const events = await Event.findAll();
+            res.status(200).json(events)
+        }
     } catch (error) {
+        console.error('Error', error)
         res.status(500).json({ error: error.message })
     }
 }
 
-const getEventsByUser = async (req, res) => {
-    try {
-        const { user_id } = req.params
-        const events = await Event.findAll({ where: { organizer_id: user_id } })
-        res.status(200).json(events)
-    } catch (error) {
-        res.status(500).json({ error: error.message })
-    }
-}
+
 
 const getEventsByUserAndCategory = async (req, res) => {
     try {
@@ -143,8 +141,28 @@ const updateEvent = async (req, res) => {
 
 const likeEvent = async (req, res) => {
     try {
-        const { user_id, event_id } = req.body
-        const like = await UserLike.create({ user_id, event_id })
+        const { event_id } = req.params
+        const { user_id } = req.body
+        const existingLike = await UserLike.findOne({
+            where: { event_id, user_id }
+        })
+
+        if (existingLike) {
+            return res.status(400).json({ message: 'Already Liked' })
+        }
+        
+        await UserLike.create({ user_id, event_id }),
+        // Event.update({ likes_count: { $inc: 1 } }, {
+        //     where: {
+        //         id: event_id
+        //     }
+        // })
+        await Event.increment('likes_count', {
+            where: {
+                id: event_id
+            }
+        })
+        res.json({ message: 'Event Liked!' })
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
@@ -152,14 +170,20 @@ const likeEvent = async (req, res) => {
 
 const dislikeEvent = async (req, res) => {
     try {
-        const { user_id, event_id } = req.body
-        const like = await UserLike.findOne({ where: { user_id, event_id } })
-        if (like) {
-            await like.destroy();
-            res.status(200).json({ message: 'Event disliked successfully' })
-        } else {
-            res.status(401).json({ error: 'Like not found' })
+        const { event_id } = req.params
+        const { user_id } = req.body
+        const like = await UserLike.destroy({ where: { user_id, event_id } })
+
+        if (like === 0) {
+            return res.status(400).json({ message: 'Event not liked' })
         }
+        await Event.decrement('likes_count', {
+            where: {
+                id: event_id
+            }
+        })
+
+        res.json({message: 'Event disliked'})
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
@@ -167,12 +191,10 @@ const dislikeEvent = async (req, res) => {
 
 module.exports = {
     createEvent,
-    getEventsByCategory,
-    getEventsByUser,
+    getEvents,
     getEventsByUserAndCategory,
     updateEvent,
     likeEvent,
     dislikeEvent,
-    getAllEvents,
     getEventId
 }
