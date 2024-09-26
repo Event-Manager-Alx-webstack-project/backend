@@ -1,7 +1,9 @@
 const User = require('../models/user')
+const Event = require('../models/event')
 const { sequelize } = require('../config/db')
 const sha1 = require('sha1');
-const redisClient = require('../utils/redis')
+const redisClient = require('../utils/redis');
+const { UserEventRegistration } = require('../models');
 
 /**
  * contains user routes handlers
@@ -183,6 +185,32 @@ class UsersController {
             bio,
         });
 
+    }
+
+    static async getAllRegisteredEvents(req, res) {
+        const { user_id } = req.params
+        
+        try {
+            const registeredEvents = await User.findAll({
+                where: {
+                    id: user_id
+                },
+                include: [
+                    {
+                        model: Event,
+                        as: 'RegisteredEvents',
+                        through: { attributes: [] }
+                    },
+                ]
+            })
+
+            const events = registeredEvents.map(registration => registration.RegisteredEvents).flat()
+
+            res.json({events})
+            // res.json(registeredEvents)
+        } catch (error) {
+            return res.status(500).json({ message: error.message })
+        }
     }
 }
 

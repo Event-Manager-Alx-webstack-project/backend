@@ -1,14 +1,15 @@
-const { Op, Sequelize, where } = require('sequelize')
-const { Event, Category, UserLike, EventCategory, User } = require('../models')
+const { Op } = require('sequelize')
+const { Event, Category, UserLike, EventCategory, UserEventRegistration } = require('../models')
 
 const createEvent = async (req, res) => {
     try {
-        const { organizer_id, name, description, location, categories } = req.body
+        const { organizer_id, name, description, location, categories, isPaid } = req.body
         const event = await Event.create({
             organizer_id,
             name,
             description,
-            location
+            location,
+            isPaid
         })
         
 
@@ -40,6 +41,23 @@ const createEvent = async (req, res) => {
     }
 }
 
+const deleteEvent = async (req, res) => {
+    const { event_id } = req.params
+
+    try {
+        const event = await Event.findByPk(event_id)
+    
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' })
+        }
+        await event.destroy();
+    
+        return res.json({ message: 'Event deleted successfully' })
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+
+}
 
 const getEventId = async (req, res) => {
     try {
@@ -152,11 +170,6 @@ const likeEvent = async (req, res) => {
         }
         
         await UserLike.create({ user_id, event_id }),
-        // Event.update({ likes_count: { $inc: 1 } }, {
-        //     where: {
-        //         id: event_id
-        //     }
-        // })
         await Event.increment('likes_count', {
             where: {
                 id: event_id
@@ -189,6 +202,60 @@ const dislikeEvent = async (req, res) => {
     }
 }
 
+const registerForEvent = async (req, res) => {
+    const { event_id } = req.params
+    const { user_id } = req.body
+
+    const event = await Event.findByPk(event_id)
+
+    if (!event) {
+        return res.status(404).json({ message: 'Event not found' })
+    }
+
+    try {
+        await UserEventRegistration.create({
+            user_id,
+            event_id,
+        })
+        return res.json({ message: 'Registration for event successful' })
+    } catch (error) {
+        return res.status(500).json({ error: error.message })
+    }
+}
+
+const handlePayment = async (req, res) => {
+    const { event_id } = req.params
+    const { user_id } = req.body
+
+    const event = await Event.findByPk(event_id)
+
+    if (!event) {
+        return res.status(404).json({ message: 'event does not exist' })
+    }
+    const isExist = await UserEventRegistration.findOne({
+        where: {
+            user_id,
+            event_id
+        }
+    })
+
+    if (!isExist) {
+        return res.status(404).json({ message: 'User is not registered for event' })
+    }
+
+
+    if (event.isPaid) {
+        await isExist.update({
+            paymentStatus: 'paid'
+        })
+
+        return res.json({ message: 'Payment successful' })
+    }
+    else {
+        return res.status(400).json({ message: 'Event is free!' })
+    }
+}
+
 module.exports = {
     createEvent,
     getEvents,
@@ -196,5 +263,8 @@ module.exports = {
     updateEvent,
     likeEvent,
     dislikeEvent,
-    getEventId
+    getEventId,
+    registerForEvent,
+    handlePayment,
+    deleteEvent
 }

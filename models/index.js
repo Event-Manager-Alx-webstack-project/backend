@@ -9,6 +9,7 @@ const UserCategory = require('./UserCategory')
 const UserFollow = require('./UserFollow')
 const UserLike = require('./UserLike')
 const UserShare = require('./UserShare')
+const UserEventRegistration = require('./UserEventRegistration')
 
 User.hasMany(Event, { foreignKey: 'organizer_id' })
 Event.belongsTo(User)
@@ -31,6 +32,9 @@ Category.belongsToMany(User, { through: UserCategory, as: 'Users', foreignKey: '
 User.belongsToMany(Event, { through: UserBookmark, as: 'BookmarkedEvents', foreignKey: 'user_id' })
 Event.belongsToMany(User, { through: UserBookmark, as: 'Bookmarks', foreignKey: 'event_id' })
 
+User.belongsToMany(Event, { through: UserEventRegistration, as: 'RegisteredEvents', foreignKey: 'user_id' })
+Event.belongsToMany(User, { through: UserEventRegistration, as: 'Registrations', foreignKey: 'event_id' })
+
 Event.hasMany(Comment, { foreignKey: 'event_id' })
 Comment.belongsTo(User)
 
@@ -50,5 +54,6 @@ module.exports = {
     UserCategory,
     UserFollow,
     UserLike,
-    UserShare
+    UserShare,
+    UserEventRegistration
 }
