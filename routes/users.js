@@ -22,5 +22,6 @@ router.post('/register', UsersController.postNew);
 //   // res.send('respond with a resource on me');
 //   res.status(201).json({ res: `${req.body.email} ${req.body.password}`});
 // });
+router.route('/:user_id/allEvents').get(UsersController.getAllRegisteredEvents)
 
 module.exports = router;

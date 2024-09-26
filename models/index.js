@@ -9,9 +9,10 @@ const UserCategory = require('./UserCategory')
 const UserFollow = require('./UserFollow')
 const UserLike = require('./UserLike')
 const UserShare = require('./UserShare')
+const UserEventRegistration = require('./UserEventRegistration')
 
 User.hasMany(Event, { foreignKey: 'organizer_id' })
-Event.belongsTo(User)
+Event.belongsTo(User, { foreignKey: 'organizer_id' })
 
 Event.belongsToMany(Category, { through: EventCategory, foreignKey: 'event_id' })
 Category.belongsToMany(Event, { through: EventCategory, foreignKey: 'category_id' })
@@ -31,8 +32,14 @@ Category.belongsToMany(User, { through: UserCategory, as: 'Users', foreignKey: '
 User.belongsToMany(Event, { through: UserBookmark, as: 'BookmarkedEvents', foreignKey: 'user_id' })
 Event.belongsToMany(User, { through: UserBookmark, as: 'Bookmarks', foreignKey: 'event_id' })
 
+User.belongsToMany(Event, { through: UserEventRegistration, as: 'RegisteredEvents', foreignKey: 'user_id' })
+Event.belongsToMany(User, { through: UserEventRegistration, as: 'Registrations', foreignKey: 'event_id' })
+
 Event.hasMany(Comment, { foreignKey: 'event_id' })
-Comment.belongsTo(User)
+Comment.belongsTo(Event, { foreignKey: 'event_id' })
+
+User.hasMany(Comment, { foreignKey:  'user_id' })
+Comment.belongsTo(User, { foreignKey: 'user_id' })
 
 sequelize.sync({ alter: true })
     .then(() => {
@@ -50,5 +57,6 @@ module.exports = {
     UserCategory,
     UserFollow,
     UserLike,
-    UserShare
+    UserShare,
+    UserEventRegistration
 }

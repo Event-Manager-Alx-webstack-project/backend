@@ -38,6 +38,14 @@ const Event = sequelize.define("Event", {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true
+    },
+    isPaid: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    }
 })
 
 
