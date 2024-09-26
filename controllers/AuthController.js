@@ -15,6 +15,7 @@ class AuthController {
      * @param {*} response
      */
     static async login(request, response) {
+        console.log('Log user');
         // const { user } = request;
         const authorization = request.headers.authorization || null;
         if (!authorization) {
@@ -25,12 +26,12 @@ class AuthController {
         // grab the encoded value
         const encoded = authorization.split(' ')[1];
         const decoded = Buffer.from(encoded, 'base64').toString();
-        const username = decoded.split(':')[0];
+        const email = decoded.split(':')[0];
         const password = decoded.split(':')[1];
-        console.log(username);
+        // console.log(username+' '+password);
         let user;
         try {
-            user = await User.findOne({  where: { username } , raw: true,},);
+            user = await User.findOne({  where: { email } , raw: true,},);
         } catch (e) {
             console.error(e);
         }

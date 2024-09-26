@@ -13,6 +13,7 @@ class UsersController {
      * @param {*} response
      */
     static async postNew(request, response) {
+        console.log('user registration');
         const email = request.body ? request.body.email : null;
         const password = request.body ? request.body.password : null;
         const firstName = request.body ? request.body.firstName : null;
