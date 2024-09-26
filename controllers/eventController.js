@@ -1,5 +1,5 @@
 const { Op, Sequelize, where } = require('sequelize')
-const { Event, Category, UserLike, EventCategory, User } = require('../models')
+const { Event, Category, UserLike, EventCategory, User, Comment } = require('../models')
 
 const createEvent = async (req, res) => {
     try {
@@ -188,6 +188,29 @@ const dislikeEvent = async (req, res) => {
         res.status(500).json({ error: error.message })
     }
 }
+const commentEvent = async (req, res) => {
+    try {
+        const { event_id } = req.params
+        const { user_id } = req.body
+        const { text } = req.body
+
+        if (!event_id) {
+            return res.status(400).json({ message: 'Event not found' })
+        }
+        if (!user_id) {
+            return res.status(400).json({ message: 'Unauthorized' })
+        }
+        await Comment.create({
+            user_id,
+            event_id,
+            text
+        });
+
+        res.json({message: 'Event commented'})
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+}
 
 module.exports = {
     createEvent,
@@ -196,5 +219,6 @@ module.exports = {
     updateEvent,
     likeEvent,
     dislikeEvent,
-    getEventId
+    getEventId,
+    commentEvent
 }

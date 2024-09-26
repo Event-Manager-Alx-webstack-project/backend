@@ -18,9 +18,7 @@ router.put('/profile', UsersController.updateInfos);
 
 /* Post register user. */
 router.post('/register', UsersController.postNew);
-// router.post('/register', function(req, res, next) {
-//   // res.send('respond with a resource on me');
-//   res.status(201).json({ res: `${req.body.email} ${req.body.password}`});
-// });
+
+router.post('/:f_user_id/follow', UsersController.follow);
 
 module.exports = router;
