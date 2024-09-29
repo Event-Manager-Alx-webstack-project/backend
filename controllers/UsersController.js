@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-const User = require('../models/user')
 const Event = require('../models/event')
-=======
 const { User, UserFollow } = require('../models')
->>>>>>> comment/following
 const { sequelize } = require('../config/db')
 const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
@@ -20,6 +16,7 @@ class UsersController {
      */
     static async postNew(request, response) {
         console.log('user registration');
+        console.log(request.body);
         const email = request.body ? request.body.email : null;
         const password = request.body ? request.body.password : null;
         const firstName = request.body ? request.body.firstName : null;
@@ -227,10 +224,9 @@ class UsersController {
 
     }
 
-<<<<<<< HEAD
     static async getAllRegisteredEvents(req, res) {
-        const { user_id } = req.params
-        
+        const {user_id} = req.params
+
         try {
             const registeredEvents = await User.findAll({
                 where: {
@@ -240,7 +236,7 @@ class UsersController {
                     {
                         model: Event,
                         as: 'RegisteredEvents',
-                        through: { attributes: [] }
+                        through: {attributes: []}
                     },
                 ]
             })
@@ -250,8 +246,9 @@ class UsersController {
             res.json({events})
             // res.json(registeredEvents)
         } catch (error) {
-            return res.status(500).json({ message: error.message })
-=======
+            return res.status(500).json({message: error.message})
+        }
+    }
     static async follow(req, res) {
         try {
             const { f_user_id } = req.params
@@ -283,7 +280,6 @@ class UsersController {
             res.json({ message: 'User Followed!' })
         } catch (error) {
             res.status(500).json({ error: error.message })
->>>>>>> comment/following
         }
     }
 }

@@ -1,10 +1,10 @@
-<<<<<<< HEAD
-const { Op } = require('sequelize')
-const { Event, Category, UserLike, EventCategory, UserEventRegistration } = require('../models')
-=======
+// <<<<<<< HEAD
+// const { Op } = require('sequelize')
+// const { Event, Category, UserLike, EventCategory, UserEventRegistration } = require('../models')
+// =======
 const { Op, Sequelize, where } = require('sequelize')
 const { Event, Category, UserLike, EventCategory, User, Comment } = require('../models')
->>>>>>> comment/following
+// >>>>>>> comment/following
 
 const createEvent = async (req, res) => {
     try {
@@ -292,11 +292,9 @@ module.exports = {
     likeEvent,
     dislikeEvent,
     getEventId,
-<<<<<<< HEAD
     registerForEvent,
     handlePayment,
-    deleteEvent
-=======
+    deleteEvent,
     commentEvent
->>>>>>> comment/following
+// >>>>>>> comment/following
 }
