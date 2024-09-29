@@ -3,6 +3,7 @@ const uuidv4 = uuid.v4;
 const sha1 = require('sha1');
 const User = require('../models/user')
 const redisClient = require('../utils/redis')
+const { generateToken } = require('../utils/jwtUtils');
 
 
 /**
@@ -28,20 +29,22 @@ class AuthController {
         const decoded = Buffer.from(encoded, 'base64').toString();
         const email = decoded.split(':')[0];
         const password = decoded.split(':')[1];
-        // console.log(username+' '+password);
+        console.log(email+' '+password);
         let user;
         try {
-            user = await User.findOne({  where: { email } , raw: true,},);
+            user = await User.findOne({  where: { email } , raw: true,});
         } catch (e) {
             console.error(e);
         }
         console.log(user);
         if (!user || sha1(password) !== user.password) {
-            response.status(401).json({ error: 'Unauthorized' });
+            response.status(401).json({ success: false,
+                message: 'Invalid email or password', });
             return;
         }
-        const token = uuidv4();
-        await redisClient.set(`auth_${token}`, user.id.toString(), 24 * 60 * 60);
+        // const token = uuidv4();
+        const token = generateToken({ id: user.id, username: user.username, email: user.email });
+        // await redisClient.set(`auth_${token}`, user.id.toString(), 24 * 60 * 60);
         response.status(200).json({ token });
     }
 
@@ -52,14 +55,15 @@ class AuthController {
      * @returns {Promise<void>}
      */
     static async logout(request, response) {
-        const token = request.headers['x-token'];
+        const token = request.headers['authorization'] || null;
 
         if (!token) {
             response.status(401).json({ error: 'Unauthorized' });
             return;
         }
         console.log(token);
-        const userId = await redisClient.get(`auth_${token}`);
+        // const userId = await redisClient.get(`auth_${token}`);
+        const userId = request.user.id;
         if (!userId) {
             response.status(401).json({ error: 'Unauthorized' });
             return;
@@ -75,7 +79,8 @@ class AuthController {
             response.status(401).json({ error: 'Unauthorized' });
             return;
         }
-        await redisClient.del(`auth_${token}`);
+        // invalidate user
+        // await redisClient.del(`auth_${token}`);
         response.status(204).send();
     }
 }

@@ -94,14 +94,14 @@ class UsersController {
         }
 
     static async getMe(request, response) {
-        const token = request.headers['x-token'];
+        const token = request.headers['authorization'];
         console.log(token);
         if (!token) {
             response.status(401).json({ error: 'Unauthorized' });
             return;
         }
-        const userId = await redisClient.get(`auth_${token}`);
-
+        // const userId = await redisClient.get(`auth_${token}`);
+        const userId = request.user.id;
         if (!userId) {
             response.status(401).json({ error: 'Unauthorized' });
             return;
@@ -137,6 +137,41 @@ class UsersController {
      * @param response
      * @returns {Promise<void>}
      */
+    static async getAll(request, response) {
+        // const token = request.headers['authorization'];
+        // console.log(token);
+        // if (!token) {
+        //     response.status(401).json({ error: 'Unauthorized' });
+        //     return;
+        // }
+        // const userId = await redisClient.get(`auth_${token}`);
+        // const userId = request.user.id;
+        // if (!userId) {
+        //     response.status(401).json({ error: 'Unauthorized' });
+        //     return;
+        // }
+        // console.log(userId);
+        let users;
+        try {
+            users = await User.findAll({ raw: true });
+        } catch (e) {
+            console.error(e);
+        }
+        if (!users) {
+            response.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        response.status(200).json({
+            users
+        });
+    }
+    /**
+     *
+     * @param request
+     * @param response
+     * @returns {Promise<void>}
+     */
     static async updateInfos(request, response) {
         const email = request.body ? request.body.email : null;
         const password = request.body ? request.body.password : null;
@@ -146,14 +181,14 @@ class UsersController {
         const bio = request.body ? request.body.bio : null;
         const profile_picture = request.body ? request.body.username : null;
 
-        const token = request.headers['x-token'];
+        const token = request.headers['authorization'];
         console.log(token);
         if (!token) {
             response.status(401).json({ error: 'Unauthorized' });
             return;
         }
-        const userId = await redisClient.get(`auth_${token}`);
-
+        // const userId = await redisClient.get(`auth_${token}`);
+        const userId = request.user.id;
         if (!userId) {
             response.status(401).json({ error: 'Unauthorized' });
             return;
@@ -171,7 +206,7 @@ class UsersController {
                 email,
                 firstName,
                 lastName,
-                password,
+                password: sha1(password),
                 bio,
                 profile_picture,
             },
