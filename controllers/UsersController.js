@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 const User = require('../models/user')
 const Event = require('../models/event')
+=======
+const { User, UserFollow } = require('../models')
+>>>>>>> comment/following
 const { sequelize } = require('../config/db')
 const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
@@ -188,6 +192,7 @@ class UsersController {
 
     }
 
+<<<<<<< HEAD
     static async getAllRegisteredEvents(req, res) {
         const { user_id } = req.params
         
@@ -211,6 +216,39 @@ class UsersController {
             // res.json(registeredEvents)
         } catch (error) {
             return res.status(500).json({ message: error.message })
+=======
+    static async follow(req, res) {
+        try {
+            const { f_user_id } = req.params
+            const { user_id } = req.body
+            const existingLike = await UserFollow.findOne({
+                where: { user_id, organizer_id: f_user_id }
+            })
+
+            if (existingLike) {
+                return res.status(400).json({ message: 'Already Following' })
+            }
+
+            await UserFollow.create({ user_id, organizer_id: f_user_id }),
+                // Event.update({ likes_count: { $inc: 1 } }, {
+                //     where: {
+                //         id: event_id
+                //     }
+                // })
+                await User.increment('follows_count', {
+                    where: {
+                        id: user_id
+                    }
+                })
+                await User.increment('followers_count', {
+                    where: {
+                        id: f_user_id
+                    }
+                })
+            res.json({ message: 'User Followed!' })
+        } catch (error) {
+            res.status(500).json({ error: error.message })
+>>>>>>> comment/following
         }
     }
 }

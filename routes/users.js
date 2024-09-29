@@ -18,10 +18,15 @@ router.put('/profile', UsersController.updateInfos);
 
 /* Post register user. */
 router.post('/register', UsersController.postNew);
+<<<<<<< HEAD
 // router.post('/register', function(req, res, next) {
 //   // res.send('respond with a resource on me');
 //   res.status(201).json({ res: `${req.body.email} ${req.body.password}`});
 // });
 router.route('/:user_id/allEvents').get(UsersController.getAllRegisteredEvents)
+=======
+
+router.post('/:f_user_id/follow', UsersController.follow);
+>>>>>>> comment/following
 
 module.exports = router;
