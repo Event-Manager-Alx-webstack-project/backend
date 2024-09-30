@@ -8,13 +8,17 @@ const { Event, Category, UserLike, EventCategory, User, Comment } = require('../
 
 const createEvent = async (req, res) => {
     try {
-        const { organizer_id, name, description, location, categories, isPaid } = req.body
+        const { organizer_id, description, location, categories, isPaid, price, thumbnail, title, date
+        } = req.body
         const event = await Event.create({
             organizer_id,
-            name,
+            name: title,
             description,
             location,
-            isPaid
+            isPaid,
+            price,
+            thumbnail,
+            date
         })
         
 
@@ -41,8 +45,9 @@ const createEvent = async (req, res) => {
             })
             res.status(201).json(createdEvent)
         }
+        res.status(201).json({ msg: 'Event successfully created' })
     } catch (error) {
-        res.status(201).json({ error: error.message })
+        res.status(401).json({ error: error.message })
     }
 }
 
@@ -118,8 +123,6 @@ const getEvents = async (req, res) => {
         res.status(500).json({ error: error.message })
     }
 }
-
-
 
 const getEventsByUserAndCategory = async (req, res) => {
     try {
@@ -295,6 +298,5 @@ module.exports = {
     registerForEvent,
     handlePayment,
     deleteEvent,
-    commentEvent
-// >>>>>>> comment/following
+    commentEvent,
 }

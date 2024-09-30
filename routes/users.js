@@ -14,6 +14,13 @@ router.get('/profile', validateToken, UsersController.getMe);
 /* PUT update ser infos. */
 router.put('/profile', validateToken, UsersController.updateInfos);
 
+//
+router.get('/organizers', UsersController.getOrganizers);
+//
+router.get('/categories', function(req, res, next) {
+  // res.send('respond with a resource on me');
+  res.status(201).json({ res: '' });
+});
 /* test middleware */
 // router.use(validateToken);
 router.get('/protected',validateToken, (req, res) => {

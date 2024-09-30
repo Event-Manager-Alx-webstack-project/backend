@@ -91,6 +91,11 @@ class UsersController {
         }
 
     static async getMe(request, response) {
+        // response.setHeader("Access-Control-Allow-Origin", "*");
+        // response.setHeader("Access-Control-Allow-Credentials", "true");
+        // response.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+        // response.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, " +
+        //     "X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
         const token = request.headers['authorization'];
         console.log(token);
         if (!token) {
@@ -135,19 +140,6 @@ class UsersController {
      * @returns {Promise<void>}
      */
     static async getAll(request, response) {
-        // const token = request.headers['authorization'];
-        // console.log(token);
-        // if (!token) {
-        //     response.status(401).json({ error: 'Unauthorized' });
-        //     return;
-        // }
-        // const userId = await redisClient.get(`auth_${token}`);
-        // const userId = request.user.id;
-        // if (!userId) {
-        //     response.status(401).json({ error: 'Unauthorized' });
-        //     return;
-        // }
-        // console.log(userId);
         let users;
         try {
             users = await User.findAll({ raw: true });
@@ -161,6 +153,34 @@ class UsersController {
 
         response.status(200).json({
             users
+        });
+    }
+    /**
+     *
+     * @param request
+     * @param response
+     * @returns {Promise<void>}
+     */
+    static async getOrganizers(request, response) {
+        let organizers;
+        try {
+            organizers = await Event.findAll({
+                attributes: ['organizer_id'],
+                include: {
+                    model: User,
+                    attributes: ['username', 'id'],
+                }
+                },);
+        } catch (e) {
+            console.error(e);
+        }
+        if (!organizers) {
+            response.status(401).json({ error: 'not found' });
+            return;
+        }
+
+        response.status(200).json({
+            organizers
         });
     }
     /**

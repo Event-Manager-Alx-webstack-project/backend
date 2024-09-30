@@ -4,11 +4,13 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const eventsRouter = require('./routes/events');
+const catsRouter = require('./routes/categories');
 
 const app = express();
 
@@ -19,16 +21,18 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(bodyParser.json());
+// Use CORS middleware
+app.use(cors({credentials: true, origin: 'http://localhost:5173'}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // routes definition
-
 app.use('/api/v1', indexRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/', authRouter);
 app.use('/api/v1/events', eventsRouter);
+app.use('/api/v1/categories', catsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
